@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.4.0",
     "bootstrap": "^5.3.8",
+    "elysia": "^1.4.9",
+    "mssql": "^12.0.0",
     "next": "15.5.3",
     "qr-scanner": "^1.4.2",
     "react": "19.1.0",

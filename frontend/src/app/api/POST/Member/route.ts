@@ -1,0 +1,24 @@
+import { NextRequest, NextResponse } from "next/server";
+import sql from "mssql";
+
+const config: sql.config = {
+  user: "sa",
+  password: "P@55w0rd",
+  server: "192.168.199.20",
+  database: "dbScan_IN_OUT",
+  options: {
+    encrypt: true, // ต้องเปิดถ้ามีการบังคับใช้ SSL
+    trustServerCertificate: true, // ✅ ตัวนี้คือคำตอบของ error ที่คุณเจอ
+  },
+};
+
+export async function POST(req: NextRequest) {
+  const data = await req.json();
+
+  const pool = await sql.connect(config);
+  const result = await pool
+    .request()
+    .input("username", sql.VarChar, data.username)
+    .query("SELECT * FROM Member WHERE Username = @username");
+  return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
+}
