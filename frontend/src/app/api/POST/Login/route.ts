@@ -25,7 +25,5 @@ export async function POST(request: NextRequest) {
       "SELECT * FROM Member WHERE Username = @Username AND Password = @Password"
     );
 
-  console.log(result.recordset);
-
   return NextResponse.json(result.recordset);
 }

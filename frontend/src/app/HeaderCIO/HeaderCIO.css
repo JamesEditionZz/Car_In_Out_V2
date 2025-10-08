@@ -3,7 +3,7 @@
     width: 100%;
     height: 90vh;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .text-success-new {
@@ -26,4 +26,8 @@
     width: 400px;
     height: 350px;
     border-radius: 10px;
+}
+
+.cursor-pointer{
+    cursor: pointer;
 }

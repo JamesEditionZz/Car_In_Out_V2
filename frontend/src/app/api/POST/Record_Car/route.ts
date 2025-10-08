@@ -12,9 +12,21 @@ const config: sql.config = {
   },
 };
 
+// กำหนด type ให้ data ชัดเจน แทน any
+type RecordCarData = {
+  date: string;
+  time: string;
+  carRegister: string;
+  numberOut?: number | "";
+  numberIn?: number | "";
+  namePerson: string;
+  Project?: string;
+  other?: string;
+};
+
 export async function POST(request: NextRequest) {
   const pool = await sql.connect(config);
-  const data = await request.json();
+  const data: RecordCarData = await request.json();
 
   try {
     const [d, m, y] = data.date.split("/");
@@ -29,7 +41,6 @@ export async function POST(request: NextRequest) {
 
     const thaiTimeWithOffset = `${year}-${month}-${day} ${hour}:${minute}:${second} +07:00`;
 
-    // ✅ กรณีบันทึกเข้า
     if (data.numberIn != "") {
       const result = await pool
         .request()
@@ -43,7 +54,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, action: "IN", result: result.recordset });
     }
 
-    // ✅ กรณีบันทึกออก
     if (data.numberOut != "") {
       const name = data.namePerson.replaceAll(/,\s*/g, "|");
 
@@ -75,9 +85,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: false, message: "Invalid payload" }, { status: 400 });
-
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

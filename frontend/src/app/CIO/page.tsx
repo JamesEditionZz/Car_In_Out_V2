@@ -1,9 +1,22 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./CIO.css"
+
+// กำหนด type ของข้อมูลจาก API (ป้องกัน any)
+interface CarDetail {
+  Project: string;
+  Car_Registration: string;
+  Name: string;
+  Number_Mile_Out: number | null;
+  Number_Mile_In: number | null;
+  Out_Time: string;
+  In_Time: string | null;
+  Status: number;
+}
 
 export default function Page() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<CarDetail[]>([]);
   const [project, setProject] = useState<string>("");
   const [Name_Person, setName_Person] = useState<string>("");
   const [other, setOther] = useState<string>("");
@@ -11,7 +24,9 @@ export default function Page() {
   const [Car_Register, setCar_Register] = useState<string>("");
   const [NumberOut, setNumberOut] = useState<number>(0);
   const [NumberIn, setNumberIn] = useState<number>(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const inputRefs = useRef<(HTMLInputElement | HTMLTextAreaElement | null)[]>(
+    []
+  );
   const [TrueMileIn, setTrueMileIn] = useState<boolean>(false);
 
   // เวลา
@@ -20,76 +35,57 @@ export default function Page() {
     return () => clearInterval(timer);
   }, []);
 
+  // focus ช่องแรกตอนเริ่ม
   useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
+    inputRefs.current[0]?.focus();
   }, []);
 
+  // fetch Update_To_Log ทุก 24 ชม.
   useEffect(() => {
-    const datafecth = async () => {
-      await fetch(`../api/UPDATE/Update_To_Log`);
+    const fetchData = async () => {
+      await fetch("../api/UPDATE/Update_To_Log");
     };
 
-    datafecth();
-
-    const interval = setInterval(() => {
-      datafecth();
-    }, 60 * 60 * 24);
-
+    fetchData();
+    const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // 24 ชม.
     return () => clearInterval(interval);
   }, []);
 
+  // fetch Detail_Car ทุก 5 วินาที
   useEffect(() => {
-    const datafecth = async () => {
-      const res = await fetch(`../api/GET/Detail_Car`);
-      const response = await res.json();
+    const fetchData = async () => {
+      const res = await fetch("../api/GET/Detail_Car");
+      const response: CarDetail[] = await res.json();
       setData(response);
     };
 
-    datafecth();
-
-    const interval = setInterval(() => {
-      datafecth();
-    }, 5000);
-
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const handlefilter = (e: React.KeyboardEvent) => {
+  // กด Enter ที่ช่องทะเบียน
+  const handlefilter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       const filter = data.filter(
         (item) => item.Car_Registration === Car_Register
       );
 
       if (filter.length > 0) {
-        for (const row of filter) {
-          if (row.Number_Mile_Out && row.Number_Mile_In) {
-            e.preventDefault();
-            const nextInput = inputRefs.current[0 + 1];
-            if (nextInput) {
-              nextInput.focus();
-              3;
-            }
-          } else {
-            setName_Person(row.Name);
-            setProject(row.Project);
-            setNumberOut(row.Number_Mile_Out);
-            setTrueMileIn(true);
-            const nextInput = inputRefs.current[4];
-            if (nextInput) {
-              nextInput.focus();
-              3;
-            }
-          }
+        const row = filter[0];
+        if (row.Number_Mile_Out && row.Number_Mile_In) {
+          e.preventDefault();
+          inputRefs.current[1]?.focus();
+        } else {
+          setName_Person(row.Name);
+          setProject(row.Project);
+          setNumberOut(row.Number_Mile_Out || 0);
+          setTrueMileIn(true);
+          inputRefs.current[4]?.focus();
         }
       } else {
         e.preventDefault();
-        const nextInput = inputRefs.current[0 + 1];
-        if (nextInput) {
-          nextInput.focus();
-          3;
-        }
+        inputRefs.current[1]?.focus();
       }
     }
   };
@@ -98,116 +94,79 @@ export default function Page() {
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const nextInput = inputRefs.current[index + 1];
-      if (nextInput) {
-        nextInput.focus();
-      }
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
+  // ป้องกัน focus หลุด
   const handleBlur = (index: number) => {
-    // ให้ช่องแรกบังคับ focus ใหม่ ถ้าไม่ได้กำลังจะไป input อื่นใน form
     setTimeout(() => {
       const active = document.activeElement as HTMLElement;
       const isInsideForm = inputRefs.current.includes(
         active as HTMLInputElement
       );
-      if (!isInsideForm && inputRefs.current[index]) {
+      if (!isInsideForm) {
         inputRefs.current[index]?.focus();
       }
     }, 0);
   };
 
   const Submit = async () => {
-    if (NumberIn > 0) {
-      if (NumberIn <= NumberOut) {
-        alert("ระบุเลขไมค์ไม่ถูกต้อง");
-        setNumberIn(0);
-        const nextInput = inputRefs.current[7];
-        if (nextInput) {
-          nextInput.focus();
-        }
-        return;
-      }
-
-      const NamePerson = [Name_Person]
-        .filter((name) => name.trim() !== "")
-        .join(", ");
-
-      const newEntry = {
-        date: time.toLocaleDateString("th-TH"),
-        time: time.toLocaleTimeString("th-TH", { hour12: false }),
-        carRegister: Car_Register,
-        namePerson: NamePerson,
-        numberOut: NumberOut > 0 ? NumberOut : "",
-        numberIn: NumberIn > 0 ? NumberIn : "",
-        Other: other,
-      };
-
-      const res = await fetch("../api/POST/Record_Car", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEntry),
-      });
-
-      if (res.ok) {
-        const res = await fetch("../api/GET/Detail_Car");
-        const data = await res.json();
-        setData(data);
-      }
-
-      setProject("");
-      setCar_Register("");
-      setName_Person("");
-      setNumberOut(0);
+    if (NumberIn > 0 && NumberIn <= NumberOut) {
+      alert("ระบุเลขไมค์ไม่ถูกต้อง");
       setNumberIn(0);
-      setTrueMileIn(false);
-
-      if (inputRefs.current[0]) {
-        inputRefs.current[0].focus();
-      }
-    } else if (NumberIn === 0) {
-      const NamePerson = [Name_Person]
-        .filter((name) => name.trim() !== "")
-        .join(", ");
-
-      const newEntry = {
-        Project: project,
-        date: time.toLocaleDateString("th-TH"),
-        time: time.toLocaleTimeString("th-TH", { hour12: false }),
-        carRegister: Car_Register,
-        namePerson: NamePerson,
-        numberOut: NumberOut > 0 ? NumberOut : "",
-        numberIn: NumberIn > 0 ? NumberIn : "",
-      };
-
-      const res = await fetch("../api/POST/Record_Car", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEntry),
-      });
-
-      if (res.ok) {
-        const res = await fetch("../api/GET/Detail_Car");
-        const data = await res.json();
-        setData(data);
-      }
+      inputRefs.current[4]?.focus();
+      return;
     }
+
+    const NamePerson = [Name_Person]
+      .filter((name) => name.trim() !== "")
+      .join(", ");
+    const baseEntry = {
+      date: time.toLocaleDateString("th-TH"),
+      time: time.toLocaleTimeString("th-TH", { hour12: false }),
+      carRegister: Car_Register,
+      namePerson: NamePerson,
+      numberOut: NumberOut > 0 ? NumberOut : "",
+      numberIn: NumberIn > 0 ? NumberIn : "",
+    };
+
+    const newEntry =
+      NumberIn > 0
+        ? { ...baseEntry, Other: other }
+        : { ...baseEntry, Project: project };
+
+    const res = await fetch("../api/POST/Record_Car", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newEntry),
+    });
+
+    if (res.ok) {
+      const response = await fetch("../api/GET/Detail_Car");
+      const data: CarDetail[] = await response.json();
+      setData(data);
+    }
+
+    setProject("");
+    setCar_Register("");
+    setName_Person("");
+    setNumberOut(0);
+    setNumberIn(0);
+    setTrueMileIn(false);
+    setOther("");
+    inputRefs.current[0]?.focus();
   };
 
   return (
     <div className="background-CIO">
-      <h2 className="mx-5 text-white">SCAN IN-OUT</h2>
-      <div className="form-input">
-        <div className="row mx-4 mt-4 bg-dark">
+      <h2 className="mx-5 text-white opacity">SCAN IN-OUT</h2>
+      <div className="form-input opacity">
+        <div className="row mx-2 mt-2 mb-2 rounded-4 bg-dark">
           <div className="col-2 border-right bg-dark">
-            <div className="fs-5 text-center p-2 border border-2 border mt-2 rounded-4">
+            <div className="fs-5 text-center p-2 border border-2 mt-2 rounded-4">
               <div className="text-white">
-                {time.toLocaleDateString("th-TH")}{" "}
+                {time.toLocaleDateString("th-TH")}
               </div>
               <div className="text-white">
                 {time.toLocaleTimeString("th-TH", { hour12: false })}
@@ -217,76 +176,99 @@ export default function Page() {
               <label className="text-white">ป้ายทะเบียนรถ</label>
               <input
                 value={Car_Register}
-                ref={(el) => (inputRefs.current[0] = el)}
+                ref={(el) => {
+                  inputRefs.current[0] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setCar_Register(e.target.value)}
                 onKeyDown={handlefilter}
                 onBlur={() => handleBlur(0)}
               />
             </div>
+
             <div className="mt-3">
               <div className="text-white">พนักงาน</div>
               <input
                 value={Name_Person}
-                ref={(el) => (inputRefs.current[1] = el)}
+                ref={(el) => {
+                  inputRefs.current[1] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setName_Person(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 1)}
               />
             </div>
+
             <div className="mt-2">
-              <label className="text-white">โครงการ</label>
+              <div>
+                <label className="text-white">โครงการ</label>
+              </div>
               <input
                 value={project}
-                ref={(el) => (inputRefs.current[2] = el)}
+                ref={(el) => {
+                  inputRefs.current[2] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setProject(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 2)}
                 onBlur={() => handleBlur(0)}
               />
             </div>
-            <div>
-              <label className="mt-3 text-white">เลขไมค์ออกโรงงาน</label>
+
+            <div className="mt-3 ">
+              <div>
+                <label className="text-white">เลขไมค์ออกโรงงาน</label>
+              </div>
               <input
-                type="number"
                 value={NumberOut}
-                ref={(el) => (inputRefs.current[3] = el)}
+                ref={(el) => {
+                  inputRefs.current[3] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setNumberOut(Number(e.target.value))}
                 onKeyDown={(e) => handleKeyDown(e, 3)}
               />
             </div>
-            <div>
-              <label className="mt-3 text-white">เลขไมค์เข้าโรงงาน</label>
+
+            <div className="mt-3">
+              <label className="text-white">เลขไมค์เข้าโรงงาน</label>
               <input
-                type="number"
                 value={NumberIn}
-                ref={(el) => (inputRefs.current[4] = el)}
+                ref={(el) => {
+                  inputRefs.current[4] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setNumberIn(Number(e.target.value))}
                 onKeyDown={(e) => handleKeyDown(e, 4)}
-                disabled={TrueMileIn ? false : true}
+                disabled={!TrueMileIn}
               />
             </div>
-            <div>
-              <label className="mt-3 text-white">หมายเหตุ</label>
-              <textarea
+
+            <div className="mt-3 ">
+              <div>
+                <label className="text-white">หมายเหตุ</label>
+              </div>
+              <input
                 value={other}
-                ref={(el) => (inputRefs.current[5] = el)}
+                ref={(el) => {
+                  inputRefs.current[5] = el;
+                }}
                 className="form-control-input text-white"
                 onChange={(e) => setOther(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 5)}
               />
             </div>
+
             <div>
               <button
                 className="btn btn-primary p-3 w-100 mt-3"
-                onClick={() => Submit()}
+                onClick={Submit}
               >
                 บันทึก
               </button>
             </div>
           </div>
+
           <div className="col-10">
             <div className="bg-dark overflow-auto">
               <table className="table table-bordered table-hover table-dark">
@@ -300,7 +282,7 @@ export default function Page() {
                     <th className="text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="cursor-pointer">
+                <tbody>
                   {data.map((item, index) => (
                     <tr key={index}>
                       <td className="text-center align-content-center">
@@ -325,11 +307,12 @@ export default function Page() {
                       </td>
                       <td className="text-center align-content-center">
                         <div>
-                          {item.In_Time ? item.In_Time.split("T")[0] : ""}{" "}
                           {item.In_Time
-                            ? item.In_Time.split("T")[1]
-                                .split("Z")[0]
-                                .split(".")[0]
+                            ? `${item.In_Time.split("T")[0]} ${
+                                item.In_Time.split("T")[1]
+                                  .split("Z")[0]
+                                  .split(".")[0]
+                              }`
                             : ""}
                         </div>
                         <div>
