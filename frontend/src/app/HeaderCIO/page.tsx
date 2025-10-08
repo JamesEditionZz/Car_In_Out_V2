@@ -134,7 +134,7 @@ export default function HeaderCIO() {
         )}
 
         {/* ตารางข้อมูล */}
-        <div className="border-data">
+        <div className="border-data table-container">
           <div className="p-3">
             <table className="border border-white table-bordered w-100">
               <thead>

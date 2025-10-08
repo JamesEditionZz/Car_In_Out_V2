@@ -162,7 +162,7 @@ export default function Page() {
     <div className="background-CIO">
       <h2 className="mx-5 text-white opacity">SCAN IN-OUT</h2>
       <div className="form-input opacity">
-        <div className="row mx-2 mt-2 mb-2 rounded-4 bg-dark">
+        <div className="row mx-2 mt-2 mb-2 rounded-4 bg-dark overflow-auto">
           <div className="col-2 border-right bg-dark">
             <div className="fs-5 text-center p-2 border border-2 mt-2 rounded-4">
               <div className="text-white">
@@ -268,7 +268,6 @@ export default function Page() {
               </button>
             </div>
           </div>
-
           <div className="col-10">
             <div className="bg-dark overflow-auto">
               <table className="table table-bordered table-hover table-dark">
