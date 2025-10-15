@@ -1,0 +1,34 @@
+th:first-child {
+  border-top-left-radius: 0px;
+}
+
+th:last-child {
+  border-top-right-radius: 0px;
+}
+
+.position-select{
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.input-value{
+    border: 0px;
+    background-color: rgba(0, 0, 0, 0);
+    width: 100%;
+}
+
+.input-value:focus{
+  outline: none;
+}
+
+td input.form-control {
+  box-shadow: none !important;
+  outline: none !important;
+  height: 100px !important;
+}
+td input.form-control:focus {
+  border: none !important;
+  box-shadow: inset 0 0 0 2px #3485ff !important; /* เส้นน้ำเงินตอนโฟกัส */
+}

@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import "./HeaderCIO.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
+import DailyReport from "./DailyReport/page";
+import MonthReport from "./MonthReport/page";
+import Bar from "./Bar/page";
 // import { useSearchParams } from "next/navigation";
 
 export default function HeaderCIO() {
@@ -24,6 +27,21 @@ export default function HeaderCIO() {
     Name: string;
     [key: string]: unknown;
   }
+
+  const arraymonth = [
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
+  ];
   // const searchParams = useSearchParams();
   // const username = searchParams.get("username");
   const username = "";
@@ -32,10 +50,15 @@ export default function HeaderCIO() {
   const [dataReport, setDataReport] = useState<CarDetail | null>(null);
   const [modelReport, setModelReport] = useState<boolean>(false);
   const [member, setMember] = useState<Member[]>([]);
+  const [swiftPage, setSwiftPage] = useState<number>(0);
+  const [pageReport, setPageReport] = useState<number>(0);
+  const [month, setMonth] = useState<string>("");
+  const [year, setYear] = useState<string>("");
+  const [showMenu, setShowMenu] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`../api/GET/Detail_Car`);
+      const res = await fetch(`../api/GET/Detail_Join_Log`);
       const response = await res.json();
       setData(response);
     };
@@ -59,14 +82,6 @@ export default function HeaderCIO() {
     fetchMember();
   }, []);
 
-  const ReportCar = (id: number) => {
-    const found = data.find((item) => item.ID === id);
-    if (found) {
-      setDataReport(found);
-      setModelReport(true);
-    }
-  };
-
   const SubmitApprove = async (Name: string, ID: number) => {
     const res = await fetch(`../api/UPDATE/Update_Detail_Car`, {
       method: "POST",
@@ -80,6 +95,14 @@ export default function HeaderCIO() {
       setData(response);
     } else {
       console.error("Approve failed");
+    }
+  };
+
+  const ShowMenu = () => {
+    if (showMenu) {
+      setShowMenu(false);
+    } else {
+      setShowMenu(true);
     }
   };
 
@@ -132,63 +155,87 @@ export default function HeaderCIO() {
             </div>
           </div>
         )}
-
-        {/* ตารางข้อมูล */}
-        <div className="border-data table-container">
-          <div className="p-3">
-            <table className="border border-white table-bordered w-100">
-              <thead>
-                <tr className="text-center">
-                  <th className="text-white">โครงการ</th>
-                  <th className="text-white">ป้ายทะเบียน</th>
-                  <th className="text-white">ผู้ขับ</th>
-                  <th className="text-white">รถออกเวลา/ไมค์</th>
-                  <th className="text-white">รถเข้าเวลา/ไมค์</th>
-                  <th className="text-white">หมายเหตุ</th>
-                  <th className="text-white">สถานะ</th>
-                  {/* <th className="text-white">รายงาน</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item, index) => (
-                  <tr key={index}>
-                    <td className="text-white text-center">{item.Project}</td>
-                    <td className="text-center text-white">
-                      {item.Car_Registration}
-                    </td>
-                    <td className="text-center text-white">{item.Name}</td>
-                    <td className="text-center text-white">
-                      <div>{item.Out_Time?.split("T")[0]}</div>
-                      <div>
-                        ({item.Number_Mile_Out?.toLocaleString?.() || ""})
-                      </div>
-                    </td>
-                    <td className="text-center text-white">
-                      <div>{item.In_Time?.split("T")[0] || ""}</div>
-                      <div>
-                        {item.Number_Mile_In
-                          ? `(${item.Number_Mile_In.toLocaleString()})`
-                          : "-"}
-                      </div>
-                    </td>
-                    <td className="text-white">{item.Other || ""}</td>
-                    <td className="text-center text-white">
-                      {item.Status === 0 ? (
-                        <button
-                          className="btn btn-warning"
-                          onClick={() =>
-                            SubmitApprove(member?.[0]?.Name || "", item.ID)
-                          }
-                        >
-                          Approve
-                        </button>
-                      ) : (
-                        <span className="text-success-new fs-5 fw-bold">
-                          Approved
-                        </span>
-                      )}
-                    </td>
-                    {/* <td className="text-center">
+        <div className="option-menu" onClick={() => ShowMenu()}>
+          <div className="option-1"></div>
+          <div className="option-2"></div>
+          <div className="option-3"></div>
+        </div>
+        <div className="d-flex justify-content-around">
+          <div
+            className={`fw-bold fs-4 text-white ${
+              swiftPage === 0 && "border-bottom border-3"
+            }`}
+          >
+            <span className="cursor-pointer" onClick={() => setSwiftPage(0)}>
+              Approve
+            </span>
+          </div>
+          <div
+            className={`fw-bold fs-4 text-white ${
+              swiftPage === 1 && "border-bottom border-3"
+            }`}
+          >
+            <span className="cursor-pointer" onClick={() => setSwiftPage(1)}>
+              Report
+            </span>
+          </div>
+        </div>
+        {swiftPage === 0 ? (
+          <div className="border-data table-container">
+            <div className="p-3">
+              <table className="border border-white table-bordered w-100">
+                <thead>
+                  <tr className="text-center">
+                    <th className="text-white">โครงการ</th>
+                    <th className="text-white">ป้ายทะเบียน</th>
+                    <th className="text-white">ผู้ขับ</th>
+                    <th className="text-white">รถออกเวลา/ไมค์</th>
+                    <th className="text-white">รถเข้าเวลา/ไมค์</th>
+                    <th className="text-white">หมายเหตุ</th>
+                    <th className="text-white">สถานะ</th>
+                    {/* <th className="text-white">รายงาน</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item, index) => (
+                    <tr key={index}>
+                      <td className="text-white text-center">{item.Project}</td>
+                      <td className="text-center text-white">
+                        {item.Car_Registration}
+                      </td>
+                      <td className="text-center text-white">{item.Name}</td>
+                      <td className="text-center text-white">
+                        <div>{item.Out_Time?.split("T")[0]}</div>
+                        <div>
+                          ({item.Number_Mile_Out?.toLocaleString?.() || ""})
+                        </div>
+                      </td>
+                      <td className="text-center text-white">
+                        <div>{item.In_Time?.split("T")[0] || ""}</div>
+                        <div>
+                          {item.Number_Mile_In
+                            ? `(${item.Number_Mile_In.toLocaleString()})`
+                            : "-"}
+                        </div>
+                      </td>
+                      <td className="text-white">{item.Other || ""}</td>
+                      <td className="text-center text-white">
+                        {item.Status === 0 ? (
+                          <button
+                            className="btn btn-warning"
+                            onClick={() =>
+                              SubmitApprove(member?.[0]?.Name || "", item.ID)
+                            }
+                          >
+                            Approve
+                          </button>
+                        ) : (
+                          <span className="text-success-new fs-5 fw-bold">
+                            Approved
+                          </span>
+                        )}
+                      </td>
+                      {/* <td className="text-center">
                       {item.Status === 1 && (
                         <Image
                           src={"/Icon/paper.png"}
@@ -200,12 +247,105 @@ export default function HeaderCIO() {
                         />
                       )}
                     </td> */}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="border-dashboard">
+            <>
+              <div
+                className={`${showMenu ? "show-menu-report" : "menu-report"}`}
+              >
+                <div className={`p-1 mt-2`}>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setPageReport(0), ShowMenu();
+                    }}
+                  >
+                    Dashboard
+                  </span>
+                </div>
+                <div className={`p-1`}>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setPageReport(1), ShowMenu();
+                    }}
+                  >
+                    Summarize
+                  </span>
+                </div>
+                <div className={`p-1`}>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setPageReport(2), ShowMenu();
+                    }}
+                  >
+                    DailyReport
+                  </span>
+                </div>
+                <div className={`p-1`}>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setPageReport(3), ShowMenu();
+                    }}
+                  >
+                    MonthReport
+                  </span>
+                </div>
+                {pageReport === 3 && (
+                  <div className="mt-2 border-2 border-top animation-input">
+                    <div className="mt-2 mx-2">
+                      <select
+                        className="form-select"
+                        onChange={(e) => setMonth(e.target.value)}
+                      >
+                        <option value="0">เดือน</option>
+                        {arraymonth.map((item, index) => (
+                          <option key={index} value={index + 1}>
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="p-2">
+                      <select
+                        className="form-select"
+                        onChange={(e) => setYear(e.target.value)}
+                      >
+                        <option value="0">ปี</option>
+                        {[
+                          ...new Set(
+                            data?.map((item) => item.Out_Time.split("-")[0])
+                          ),
+                        ].map((year, index) => (
+                          <option key={index}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+            {pageReport === 0 ? (
+              <Bar />
+            ) : pageReport === 1 ? (
+              <></>
+            ) : pageReport === 2 ? (
+              <DailyReport />
+            ) : (
+              <div className="w-full-data">
+                <MonthReport month={month} year={Number(year)} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

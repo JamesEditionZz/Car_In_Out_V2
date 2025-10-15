@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Login.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,17 @@ export default function Login() {
   const [modelFailed, setModelFailed] = useState<boolean>(false);
 
   const router = useRouter();
+
+  // fetch Update_To_Log ทุก 24 ชม.
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetch("../api/UPDATE/Update_To_Log");
+    };
+
+    fetchData();
+    // const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // 24 ชม.
+    // return () => clearInterval(interval);
+  }, []);
 
   const Submit = async () => {
     const res = await fetch(`../api/POST/Login`, {

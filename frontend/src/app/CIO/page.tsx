@@ -31,24 +31,13 @@ export default function Page() {
 
   // เวลา
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(new Date()), 5000);
     return () => clearInterval(timer);
   }, []);
 
   // focus ช่องแรกตอนเริ่ม
   useEffect(() => {
     inputRefs.current[0]?.focus();
-  }, []);
-
-  // fetch Update_To_Log ทุก 24 ชม.
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetch("../api/UPDATE/Update_To_Log");
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // 24 ชม.
-    return () => clearInterval(interval);
   }, []);
 
   // fetch Detail_Car ทุก 5 วินาที
