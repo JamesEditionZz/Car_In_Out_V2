@@ -23,8 +23,6 @@ export async function POST(res: NextRequest) {
       .input("Name", sql.VarChar, data.Name)
       .query("UPDATE Detail_Car SET UserApprove = @Name, Status = 1 WHERE ID = @ID");
 
-    console.log(result);
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

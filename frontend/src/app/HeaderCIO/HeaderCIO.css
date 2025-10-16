@@ -1,168 +1,275 @@
 @media screen and (max-width: 1500px) {
+  .menu-report {
+    display: none;
+  }
 
-    .menu-report {
-        display: none;
+  .border-dashboard {
+    left: -8% !important;
+    width: 96% !important;
+    z-index: 1000;
+  }
+
+  .option-menu {
+    position: fixed;
+    top: 1%;
+    left: 1%;
+    border-radius: 10px;
+    width: 40px;
+    height: 25px;
+    animation: slide-option 0.5s forwards;
+  }
+
+  .option-menu:hover {
+    cursor: pointer;
+  }
+
+  @keyframes slide-option {
+    0% {
+      left: -10%;
     }
 
-    .border-dashboard {
-        left: -8% !important;
-        width: 96% !important;
+    100% {
+      left: 1%;
+    }
+  }
+
+  .option-1 {
+    width: 30px;
+    height: 5px;
+    margin-top: 2px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .option-2 {
+    width: 30px;
+    height: 5px;
+    margin-top: 2px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .option-3 {
+    width: 30px;
+    height: 5px;
+    margin-top: 2px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .show-menu-report {
+    position: fixed !important;
+    left: 0 !important;
+    width: 9% !important;
+    height: 90vh !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border-radius: 10px !important;
+    color: white !important;
+    animation: slideshowmenu 0.5s forwards !important;
+    z-index: 1 !important;
+  }
+}
+
+@media screen and (min-width: 1500px) {
+  .border-data {
+    margin-top: 10px !important;
+    width: 100% !important;
+    height: 90vh !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .text-success-new {
+    color: rgb(11, 255, 11) !important;
+  }
+
+  .model {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .model-content {
+    margin: auto !important;
+    margin-top: 130px !important;
+    background-color: white !important;
+    width: 400px !important;
+    height: 350px !important;
+    border-radius: 10px !important;
+  }
+
+  .cursor-pointer {
+    cursor: pointer !important;
+  }
+
+  .border-dashboard {
+    left: 0 !important;
+    margin-top: 10px !important;
+    margin-left: 10% !important;
+    margin-right: 10px !important;
+    position: fixed !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 10px !important;
+    width: 89% !important;
+    height: 90vh !important;
+  }
+
+  .card-DayCar {
+    margin-top: 10px !important;
+    margin-left: 10px !important;
+    width: 700px !important;
+  }
+
+  .menu-report {
+    position: fixed !important;
+    left: 0 !important;
+    width: 9% !important;
+    height: 90vh !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border-radius: 10px !important;
+    color: white !important;
+    animation: slidemenu 0.5s forwards !important;
+  }
+
+  @keyframes slidemenu {
+    0% {
+      left: -100% !important;
     }
 
-    .option-menu {
-        position: fixed;
-        top: 1%;
-        left: 1%;
-        border-radius: 10px;
-        width: 40px;
-        height: 25px;
-        animation: slide-option 0.5s forwards;
+    100% {
+      left: 0 !important;
+    }
+  }
+
+  .animation-input {
+    animation: slideinput 0.5s forwards !important;
+  }
+
+  @keyframes slideinput {
+    0% {
+      transform: translateX(-100%) !important;
     }
 
-    .option-menu:hover {
-        cursor: pointer;
+    100% {
+      transform: translateX(0%) !important;
     }
-
-    @keyframes slide-option {
-        0% {
-            left: -10%;
-        }
-
-        100% {
-            left: 1%;
-        }
-    }
-
-    .option-1 {
-        width: 30px;
-        height: 5px;
-        margin-top: 2px;
-        margin-left: 4px;
-        margin-right: 4px;
-        border-radius: 10px;
-        background-color: white;
-    }
-
-    .option-2 {
-        width: 30px;
-        height: 5px;
-        margin-top: 2px;
-        margin-left: 4px;
-        margin-right: 4px;
-        border-radius: 10px;
-        background-color: white;
-    }
-
-    .option-3 {
-        width: 30px;
-        height: 5px;
-        margin-top: 2px;
-        margin-left: 4px;
-        margin-right: 4px;
-        border-radius: 10px;
-        background-color: white;
-    }
-
-    .show-menu-report {
-        position: fixed !important;
-        left: 0 !important;
-        width: 9% !important;
-        height: 90vh !important;
-        background: rgba(0, 0, 0, 0.8) !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-        border-radius: 10px !important;
-        color: white !important;
-        animation: slideshowmenu 0.5s forwards !important;
-    }
+  }
 }
 
 .border-data {
-    margin-top: 10px;
-    width: 100%;
-    height: 90vh;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
+  margin-top: 10px;
+  width: 100%;
+  height: 90vh;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .text-success-new {
-    color: rgb(11, 255, 11);
+  color: rgb(11, 255, 11);
 }
 
 .model {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .model-content {
-    margin: auto;
-    margin-top: 130px;
-    background-color: white;
-    width: 400px;
-    height: 350px;
-    border-radius: 10px;
+  margin: auto;
+  margin-top: 130px;
+  background-color: white;
+  width: 400px;
+  height: 350px;
+  border-radius: 10px;
 }
 
 .cursor-pointer {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .border-dashboard {
-    left: 0;
-    margin-top: 10px;
-    margin-left: 10%;
-    margin-right: 10px;
-    position: fixed;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    width: 89%;
-    height: 90vh;
+  left: 0;
+  margin-top: 10px;
+  margin-left: 10%;
+  margin-right: 10px;
+  position: fixed;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  width: 89%;
+  height: 90vh;
 }
 
 .card-DayCar {
-    margin-top: 10px;
-    margin-left: 10px;
-    width: 700px;
+  margin-top: 10px;
+  margin-left: 10px;
+  width: 700px;
 }
 
 .menu-report {
-    position: fixed;
-    left: 0;
-    width: 9%;
-    height: 90vh;
-    background: rgba(0, 0, 0, 0.3);
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 10px;
-    color: white;
-    animation: slidemenu 0.5s forwards;
+  position: fixed;
+  margin-left: 5px;
+  left: 1%;
+  width: 9%;
+  height: 90vh;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  color: white;
+  animation: slidemenu 0.5s forwards;
 }
 
 @keyframes slidemenu {
-    0% {
-        left: -100%;
-    }
+  0% {
+    left: -100%;
+  }
 
-    100% {
-        left: 0;
-    }
+  100% {
+    left: 0;
+  }
 }
 
 .animation-input {
-    animation: slideinput 0.5s forwards;
+  animation: slideinput 0.5s forwards;
 }
 
 @keyframes slideinput {
-    0% {
-        transform: translateX(-100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
 
-    100% {
-        transform: translateX(0%);
-    }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.opacity {
+  animation: opacity 0.5s forwards;
+}
+
+@keyframes opacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

@@ -2,10 +2,9 @@
 import React, { useEffect, useState } from "react";
 import "./HeaderCIO.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Image from "next/image";
 import DailyReport from "./DailyReport/page";
 import MonthReport from "./MonthReport/page";
-import Bar from "./Bar/page";
+import Bar from "./Dashboard/page";
 // import { useSearchParams } from "next/navigation";
 
 export default function HeaderCIO() {
@@ -55,6 +54,7 @@ export default function HeaderCIO() {
   const [month, setMonth] = useState<string>("");
   const [year, setYear] = useState<string>("");
   const [showMenu, setShowMenu] = useState<boolean>(false);
+  const [subPage, setSubPage] = useState<number>(0)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,11 +155,21 @@ export default function HeaderCIO() {
             </div>
           </div>
         )}
-        <div className="option-menu" onClick={() => ShowMenu()}>
-          <div className="option-1"></div>
-          <div className="option-2"></div>
-          <div className="option-3"></div>
-        </div>
+        {showMenu ? (
+          <h2
+            className="position-absolute cursor-pointer start-0 mx-3 text-white"
+            onClick={() => ShowMenu()}
+          >
+            &times;
+          </h2>
+        ) : (
+          <div className="option-menu" onClick={() => ShowMenu()}>
+            <div className="option-1"></div>
+            <div className="option-2"></div>
+            <div className="option-3"></div>
+          </div>
+        )}
+
         <div className="d-flex justify-content-around">
           <div
             className={`fw-bold fs-4 text-white ${
@@ -176,7 +186,7 @@ export default function HeaderCIO() {
             }`}
           >
             <span className="cursor-pointer" onClick={() => setSwiftPage(1)}>
-              Report
+              สรุป
             </span>
           </div>
         </div>
@@ -261,9 +271,9 @@ export default function HeaderCIO() {
               >
                 <div className={`p-1 mt-2`}>
                   <span
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${subPage === 0 ? "border-bottom border-2" : ""}`}
                     onClick={() => {
-                      setPageReport(0), ShowMenu();
+                      setPageReport(0), setSubPage(0);
                     }}
                   >
                     Dashboard
@@ -271,9 +281,9 @@ export default function HeaderCIO() {
                 </div>
                 <div className={`p-1`}>
                   <span
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${subPage === 1 ? "border-bottom border-2" : ""}`}
                     onClick={() => {
-                      setPageReport(1), ShowMenu();
+                      setPageReport(1), setSubPage(1);
                     }}
                   >
                     Summarize
@@ -281,9 +291,9 @@ export default function HeaderCIO() {
                 </div>
                 <div className={`p-1`}>
                   <span
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${subPage === 2 ? "border-bottom border-2" : ""}`}
                     onClick={() => {
-                      setPageReport(2), ShowMenu();
+                      setPageReport(2), setSubPage(2);
                     }}
                   >
                     DailyReport
@@ -291,9 +301,9 @@ export default function HeaderCIO() {
                 </div>
                 <div className={`p-1`}>
                   <span
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${subPage === 3 ? "border-bottom border-2" : ""}`}
                     onClick={() => {
-                      setPageReport(3), ShowMenu();
+                      setPageReport(3), setSubPage(3);
                     }}
                   >
                     MonthReport
@@ -334,11 +344,15 @@ export default function HeaderCIO() {
               </div>
             </>
             {pageReport === 0 ? (
-              <Bar />
+              <div>
+                <Bar />
+              </div>
             ) : pageReport === 1 ? (
               <></>
             ) : pageReport === 2 ? (
-              <DailyReport />
+              <div>
+                <DailyReport />
+              </div>
             ) : (
               <div className="w-full-data">
                 <MonthReport month={month} year={Number(year)} />

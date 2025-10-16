@@ -51,7 +51,45 @@ export async function POST(request: NextRequest) {
           "UPDATE Detail_Car SET In_Time = @In_Time, Number_Mile_In = @Number_Mile_In WHERE Car_Registration = @Car_Registration"
         );
 
-      return NextResponse.json({ success: true, action: "IN", result: result.recordset });
+      const updateLog = await pool
+        .request()
+        .input("Car_Registration", sql.VarChar, data.carRegister)
+        .query(
+          `SELECT * FROM Detail_Car WHERE Car_Registration = @Car_Registration`
+        );
+
+      const responseupdate = updateLog.recordset;
+
+      await pool
+        .request()
+        .input("Project", sql.VarChar, responseupdate[0].Project)
+        .input(
+          "Car_Registration",
+          sql.VarChar,
+          responseupdate[0].Car_Registration
+        )
+        .input("Out_Time", sql.DateTime, responseupdate[0].Out_Time)
+        .input("Number_Mile_Out", sql.Float, responseupdate[0].Number_Mile_Out)
+        .input("In_Time", sql.DateTime, responseupdate[0].In_Time)
+        .input("Number_Mile_In", sql.Float, responseupdate[0].Number_Mile_In)
+        .input("Name", sql.VarChar, responseupdate[0].Name)
+        .input("Other", sql.VarChar, responseupdate[0].Other)
+        .input("UserApprove", sql.VarChar, responseupdate[0].UserApprove)
+        .query(
+          `INSERT INTO Detail_Log (Project, Car_Registration, Out_Time, Number_Mile_Out, In_Time, Number_Mile_In, Name, Other, UserApprove) 
+                VALUES (@Project, @Car_Registration, @Out_Time, @Number_Mile_Out, @In_Time, @Number_Mile_In, @Name, @Other, @UserApprove)`
+        );
+
+      await pool
+        .request()
+        .input("Car_Registration", sql.VarChar, data.carRegister)
+        .query(`DELETE Detail_Car WHERE Car_Registration = @Car_Registration`);
+
+      return NextResponse.json({
+        success: true,
+        action: "IN",
+        result: result.recordset,
+      });
     }
 
     if (data.numberOut != "") {
@@ -78,16 +116,29 @@ export async function POST(request: NextRequest) {
             "INSERT INTO Detail_Car (Project, Car_Registration, Out_Time, Number_Mile_Out, Name, Other, Status) VALUES (@Project, @Car_Registration, @Out_Time, @Number_Mile_Out, @Name, @Other, @Status)"
           );
 
-        return NextResponse.json({ success: true, action: "OUT", result: result.recordset });
+        return NextResponse.json({
+          success: true,
+          action: "OUT",
+          result: result.recordset,
+        });
       }
 
-      return NextResponse.json({ success: false, message: "Car already checked IN without OUT" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Car already checked IN without OUT" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: false, message: "Invalid payload" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: "Invalid payload" },
+      { status: 400 }
+    );
   } catch (error: unknown) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: message },
+      { status: 500 }
+    );
   }
 }

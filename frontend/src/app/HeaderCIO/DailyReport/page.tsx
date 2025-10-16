@@ -20,7 +20,7 @@ const BarChart: React.FC = () => {
   }
 
   const [dataDetailCar, setDataDetailCar] = useState<Data[]>();
-  const [slideMenu, setSlideMenu] = useState<boolean>(false);
+  // const [slideMenu, setSlideMenu] = useState<boolean>(false);
 
   useEffect(() => {
     const datafecth = async () => {

@@ -12,17 +12,6 @@ export default function Login() {
 
   const router = useRouter();
 
-  // fetch Update_To_Log ทุก 24 ชม.
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetch("../api/UPDATE/Update_To_Log");
-    };
-
-    fetchData();
-    // const interval = setInterval(fetchData, 24 * 60 * 60 * 1000); // 24 ชม.
-    // return () => clearInterval(interval);
-  }, []);
-
   const Submit = async () => {
     const res = await fetch(`../api/POST/Login`, {
       method: "POST",

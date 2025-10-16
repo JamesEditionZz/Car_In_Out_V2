@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
 
 const config: sql.config = {
@@ -12,11 +12,18 @@ const config: sql.config = {
   },
 };
 
-export async function GET() {
+export async function POST(req: NextRequest) {
+  const data = await req.json();
+
   const pool = await sql.connect(config);
   const result = await pool
     .request()
-    .query(`SELECT * FROM Detail_Car UNION ALL SELECT * FROM Detail_Log`);
+    .input("Car_Registration", sql.VarChar, data)
+    .query(
+      "SELECT * FROM Detail_Log WHERE Car_Registration = @Car_Registration ORDER BY ID DESC"
+    );
 
+  console.log(result);
+  
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

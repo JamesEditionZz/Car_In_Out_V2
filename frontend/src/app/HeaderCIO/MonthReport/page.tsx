@@ -9,7 +9,7 @@ interface BarChartProps {
   year: number;
 }
 
-const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
+const BarChart: React.FC<BarChartProps> = (/*{ month, year }*/) => {
   interface Data {
     ID: number;
     Car_Registration: string;
@@ -22,10 +22,10 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
 
   const [dataDetailCar, setDataDetailCar] = useState<Data[]>();
   const [defualtData, setDefualtData] = useState<Data[]>();
-  const [totalBath, setTotalBath] = useState<number>();
-  const [lite, setLite] = useState<number>();
-  const [liteRate, setLiteRate] = useState<number>();
-  const [average, setAverage] = useState<number>();
+  const [totalBath, setTotalBath] = useState<string>();
+  const [lite, setLite] = useState<string>();
+  const [liteRate, setLiteRate] = useState<string>();
+  const [average, setAverage] = useState<string>();
   const [result, setResult] = useState<string>();
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
 
   return (
     <div>
-      <table className="table table-bordered">
+      <table className="table-bordered">
         <thead>
           <tr>
             <th rowSpan={2} className="text-center align-content-center">
@@ -82,8 +82,8 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
             <th className="text-center">ไมค์ออก</th>
             <th className="text-center">ไมค์เข้า</th>
             <th className="text-center">จำนวนกม.</th>
-            <th className="text-center">รวมเงิน/บาท</th>
             <th className="text-center">จำนวนลิตร</th>
+            <th className="text-center">รวมเงิน/บาท</th>
             <th className="text-center">อัตราสิ้นเปลือง</th>
             <th className="text-center">เกณฑ์เฉลี่ย</th>
             <th className="text-center">ผลการ</th>
@@ -92,8 +92,8 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
             <th className="text-center">วันที่ </th>
             <th className="text-center">วันที่</th>
             <th className="text-center">ที่วิ่ง</th>
-            <th className="text-center">บาท</th>
             <th className="text-center">รวม</th>
+            <th className="text-center">บาท</th>
             <th className="text-center">กม/ลิตร เฉลี่ย</th>
             <th className="text-center">ใช้จริง</th>
             <th className="text-center">ประเมิน</th>
@@ -103,13 +103,16 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
           {(() => {
             if (!dataDetailCar || dataDetailCar.length === 0) return null; // ⛔ ถ้ายังไม่มีข้อมูล ไม่ต้อง render
 
-            const grouped = dataDetailCar.reduce((acc, item) => {
-              if (!acc[item.Car_Registration]) {
-                acc[item.Car_Registration] = [];
-              }
-              acc[item.Car_Registration].push(item);
-              return acc;
-            }, {});
+            const grouped = dataDetailCar.reduce(
+              (acc: Record<string, (typeof dataDetailCar)[number][]>, item) => {
+                if (!acc[item.Car_Registration]) {
+                  acc[item.Car_Registration] = [];
+                }
+                acc[item.Car_Registration].push(item);
+                return acc;
+              },
+              {}
+            );
 
             const groupedArray = Object.entries(grouped);
 
@@ -150,15 +153,19 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
                     {/* ✅ รายละเอียดระยะทาง */}
                     <td className="text-center border p-1">
                       <div>{item?.Out_Time.split("T")[0] ?? "-"}</div>
-                      <div>{item?.Out_Time.split("T")[1].split(".")[0] ?? "-"}</div>
+                      <div>
+                        {item?.Out_Time.split("T")[1].split(".")[0] ?? "-"}
+                      </div>
                       <div>{`(${item?.Number_Mile_Out ?? "-"})`}</div>
                     </td>
                     <td className="text-center border p-1">
-                      <div>{item?.In_Time.split("T")[0] ?? "-"}</div>
-                      <div>{item?.In_Time.split("T")[1].split(".")[0] ?? "-"}</div>
+                      <div>{item?.In_Time?.split("T")[0] ?? "-"}</div>
+                      <div>
+                        {item?.In_Time?.split("T")[1].split(".")[0] ?? "-"}
+                      </div>
                       <div>{`(${item?.Number_Mile_In ?? "-"})`}</div>
                     </td>
-                    <td className="text-center border p-1">
+                    <td className="text-center border p-1 align-content-center">
                       {item?.Number_Mile_In
                         ? Number(item.Number_Mile_In) -
                           Number(item.Number_Mile_Out)
@@ -171,11 +178,11 @@ const BarChart: React.FC<BarChartProps> = ({ month, year }) => {
                         <td key={idx} className="p-0 border">
                           <input
                             type="text"
-                            className="form-control border-0 rounded-0 w-100 h-100"
+                            className="form-control-other border-0 rounded-0 w-100 h-100 text-center"
                             onChange={(e) => {
-                              const val = e.target.value;
-                              if (field === "totalBath") setTotalBath(val);
-                              else if (field === "lite") setLite(val);
+                              const val = String(e.target.value);
+                              if (field === "lite") setLite(val);
+                              else if (field === "totalBath" ) setTotalBath(val);
                               else if (field === "liteRate") setLiteRate(val);
                               else if (field === "average") setAverage(val);
                               else if (field === "result") setResult(val);

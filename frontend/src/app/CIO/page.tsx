@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./CIO.css"
+import "./CIO.css";
 
 // กำหนด type ของข้อมูลจาก API (ป้องกัน any)
 interface CarDetail {
@@ -17,6 +17,7 @@ interface CarDetail {
 
 export default function Page() {
   const [data, setData] = useState<CarDetail[]>([]);
+  const [logdata, setLogData] = useState<any[]>([]);
   const [project, setProject] = useState<string>("");
   const [Name_Person, setName_Person] = useState<string>("");
   const [other, setOther] = useState<string>("");
@@ -31,7 +32,7 @@ export default function Page() {
 
   // เวลา
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 5000);
+    const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -51,6 +52,16 @@ export default function Page() {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch("../api/GET/Detail_Join_Log");
+      const response: CarDetail[] = await res.json();
+      setLogData(response);
+    };
+
+    fetchData();
   }, []);
 
   // กด Enter ที่ช่องทะเบียน
@@ -73,6 +84,19 @@ export default function Page() {
           inputRefs.current[4]?.focus();
         }
       } else {
+        const fetchData = async () => {
+          const res = await fetch("../api/POST/Detail_Join_Log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(Car_Register),
+          });
+          const response: CarDetail[] = await res.json();
+          setLogData(response);
+          setNumberOut(response[0]?.Number_Mile_In);
+        };
+
+        fetchData();
+
         e.preventDefault();
         inputRefs.current[1]?.focus();
       }
@@ -147,6 +171,54 @@ export default function Page() {
     inputRefs.current[0]?.focus();
   };
 
+  const SubmitFinal = async (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      if (project !== "" && project !== "-") {
+        const NamePerson = [Name_Person]
+          .filter((name) => name.trim() !== "")
+          .join(", ");
+        const baseEntry = {
+          date: time.toLocaleDateString("th-TH"),
+          time: time.toLocaleTimeString("th-TH", { hour12: false }),
+          carRegister: Car_Register,
+          namePerson: NamePerson,
+          numberOut: NumberOut > 0 ? NumberOut : "",
+          numberIn: NumberIn > 0 ? NumberIn : "",
+        };
+
+        const newEntry =
+          NumberIn > 0
+            ? { ...baseEntry, Other: other }
+            : { ...baseEntry, Project: project };
+
+        const res = await fetch("../api/POST/Record_Car", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry),
+        });
+
+        if (res.ok) {
+          const response = await fetch("../api/GET/Detail_Car");
+          const data: CarDetail[] = await response.json();
+          setData(data);
+        }
+
+        setProject("");
+        setCar_Register("");
+        setName_Person("");
+        setNumberOut(0);
+        setNumberIn(0);
+        setTrueMileIn(false);
+        setOther("");
+        inputRefs.current[0]?.focus();
+      } else {
+        alert("ระบุ หมายเหตุ");
+        e.preventDefault();
+        inputRefs.current[5]?.focus();
+      }
+    }
+  };
+
   return (
     <div className="background-CIO">
       <h2 className="mx-5 text-white opacity">SCAN IN-OUT</h2>
@@ -199,7 +271,7 @@ export default function Page() {
                 }}
                 className="form-control-input text-white"
                 onChange={(e) => setProject(e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, 2)}
+                onKeyDown={(e) => SubmitFinal(e)}
                 onBlur={() => handleBlur(0)}
               />
             </div>
@@ -215,7 +287,6 @@ export default function Page() {
                 }}
                 className="form-control-input text-white"
                 onChange={(e) => setNumberOut(Number(e.target.value))}
-                onKeyDown={(e) => handleKeyDown(e, 3)}
               />
             </div>
 
@@ -281,7 +352,7 @@ export default function Page() {
                       <td className="text-center align-content-center">
                         {item.Car_Registration}
                       </td>
-                      <td>{item.Name}</td>
+                      <td className="align-content-center text-center">{item.Name}</td>
                       <td className="text-center align-content-center">
                         <div>
                           {item.Out_Time.split("T")[0]}{" "}
@@ -293,7 +364,7 @@ export default function Page() {
                         </div>
                         <div>({item.Number_Mile_Out})</div>
                       </td>
-                      <td className="text-center align-content-center">
+                      <td className="text-center align-content-center" width="20%">
                         <div>
                           {item.In_Time
                             ? `${item.In_Time.split("T")[0]} ${
