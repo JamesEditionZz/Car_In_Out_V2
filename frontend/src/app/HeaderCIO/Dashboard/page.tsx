@@ -1,15 +1,41 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Menu } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Bar.css";
+import Image from "next/image";
+
+interface CarDetail {
+  Project: string;
+  Car_Registration: string;
+  Name: string;
+  Number_Mile_Out: number | null;
+  Number_Mile_In: number | null;
+  Out_Time: string;
+  In_Time: string | null;
+  Status: number;
+}
 
 export default function Dashboard() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<CarDetail[]>([]);
+  const [dataDashboard, setDataDashboard] = useState<CarDetail[]>([]);
+  const [model_select_date, setModel_select_date] = useState<boolean>(false);
+  const [select_value, setSelect_value] = useState<number>(0);
+  const [value_date, setValueDate] = useState<string>("");
 
   useEffect(() => {
     const datafecth = async () => {
       const res = await fetch(`../../api/GET/Detail_Car`);
+      const response = await res.json();
+
+      setDataDashboard(response);
+    };
+    datafecth();
+  }, []);
+
+  useEffect(() => {
+    const datafecth = async () => {
+      const res = await fetch(`../../api/GET/Detail_Join_Log`);
       const response = await res.json();
 
       setData(response);
@@ -18,21 +44,35 @@ export default function Dashboard() {
   }, []);
 
   const chartData = [
-    { month: "Jan", value: 45 },
-    { month: "Feb", value: 52 },
-    { month: "Mar", value: 38 },
-    { month: "Apr", value: 65 },
-    { month: "May", value: 58 },
-    { month: "Jun", value: 70 },
-    { month: "Jul", value: 48 },
-    { month: "Aug", value: 62 },
-    { month: "Sep", value: 55 },
-    { month: "Oct", value: 68 },
-    { month: "Nov", value: 45 },
-    { month: "Dec", value: 52 },
+    { month: "ม.ค.", value: 0 },
+    { month: "ก.พ.", value: 0 },
+    { month: "มี.ค.", value: 0 },
+    { month: "เม.ย.", value: 0 },
+    { month: "พ.ค.", value: 0 },
+    { month: "มิ.ย.", value: 0 },
+    { month: "ก.ค.", value: 0 },
+    { month: "ส.ค.", value: 0 },
+    { month: "ก.ย.", value: 0 },
+    { month: "ต.ค.", value: 0 },
+    { month: "พ.ย.", value: 0 },
+    { month: "ธ.ค.", value: 0 },
   ];
 
-  const CircularProgress = ({ value, color }) => {
+  data.map((item) => {
+    const month = new Date(item.Out_Time).getMonth();
+    chartData[month].value += 1;
+  })
+
+  console.log(chartData);
+  
+
+  const CircularProgress = ({
+    value,
+    color,
+  }: {
+    value: number;
+    color: string;
+  }) => {
     const circumference = 2 * Math.PI * 45;
     const offset = circumference - (value / 400) * circumference;
 
@@ -61,20 +101,156 @@ export default function Dashboard() {
     );
   };
 
+  const today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
+  const timenine = new Date(`${formattedDate}T09:00:00`);
+
+  const valueSelectDate = (value: number) => {
+    setSelect_value(value);
+  };
+
+  const downloadExcel = async () => {
+    const res = await fetch(`../../api/POST/Download_Excel_Report`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type_report: select_value,
+        date_report: value_date,
+      }),
+    });
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `รายงานรถเข้าออก${value_date}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+  };
+
+  const number_Car_IN = data.filter((item) => {
+    const inTime = item.In_Time?.split("T")[1].split(".")[0] || "";
+    return inTime <= "14:00:00";
+  }).length;
+
+  const number_Car_Out = data.filter((item) => {
+    const OutTime = item.Out_Time?.split("T")[1].split(".")[0] || "";
+    return OutTime <= "09:00:00";
+  }).length;
+
+  const Time_Car_IN = data.filter((item) => {
+    const inTime = item.In_Time?.split("T")[1].split(".")[0] || "";
+    return inTime <= "17:30:00";
+  }).length;
+
+  const Time_Car_Out = data.filter((item) => {
+    const OutTime = item.Out_Time?.split("T")[1].split(".")[0] || "";
+    return OutTime <= "08:30:00";
+  }).length;
+
+  const successValueIn = Time_Car_IN;
+  const dangerValueIn = data.length - Time_Car_IN;
+  const totalIn = successValueIn + dangerValueIn;
+
+  const successPercentIn = (successValueIn / totalIn) * 100;
+  const dangerPercentIn = (dangerValueIn / totalIn) * 100;
+
+  const successValueOut = Time_Car_Out;
+  const dangerValueOut = data.length - Time_Car_Out;
+  const totalOut = successValueOut + dangerValueOut;
+
+  const successPercentOut = (successValueOut / totalOut) * 100;
+  const dangerPercentOut = (dangerValueOut / totalOut) * 100;
+  
+
   return (
     <div className="">
+      {model_select_date && (
+        <div className="model-download">
+          <div className="model-download-content p-4">
+            <select
+              className="form-select"
+              onChange={(e) =>
+                valueSelectDate(e.target.value as unknown as number)
+              }
+            >
+              <option className="" hidden>
+                เลือกประเภทรายงาน
+              </option>
+              <option value={1}>รายวัน</option>
+              <option value={2}>รายเดือน</option>
+              <option value={3}>รายปี</option>
+            </select>
+            {select_value == 1 && (
+              <input
+                type="date"
+                className="form-control mt-3"
+                onChange={(e) => setValueDate(e.target.value)}
+              />
+            )}
+            {select_value == 2 && (
+              <input
+                type="month"
+                className="form-control mt-3"
+                onChange={(e) => setValueDate(e.target.value)}
+              />
+            )}
+            {select_value == 3 && (
+              <input
+                type="number"
+                className="form-control mt-3"
+                placeholder="ระบุปี เช่น 2025"
+                onChange={(e) => setValueDate(e.target.value)}
+              />
+            )}
+            <div className="d-flex justify-content-between gap-2 mt-3">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setModel_select_date(false), setSelect_value(0);
+                }}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => downloadExcel()}
+              >
+                ตกลง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container-fluid p-3 overflow-auto">
         <div className="d-flex justify-content-between align-items-center mb-2 border-2 border-bottom mx-2">
           <h1 className="text-white h4 mb-0">Dashboard</h1>
           <div className="d-flex align-items-center gap-3">
             <span className="text-white h4">รถเข้าออก</span>
+            <span
+              className="cursor-pointer"
+              onClick={() => setModel_select_date(true)}
+            >
+              <Image
+                src={"/Icon/cloud-computing.png"}
+                width="30"
+                height="30"
+                alt="download"
+              />
+            </span>
           </div>
         </div>
         <div className="row g-3 mb-3">
           <div className="col-md-2">
             <div className="card card-custom p-2">
               <div className="position-relative d-flex align-items-center justify-content-center mt-5 mb-5">
-                <CircularProgress value={10} color="url(#gradient1)" />
+                <CircularProgress
+                  value={0 + dataDashboard.length}
+                  color="url(#gradient1)"
+                />
                 <div
                   className="position-absolute"
                   style={{
@@ -83,7 +259,9 @@ export default function Dashboard() {
                     transform: "translate(-50%, -50%)",
                   }}
                 >
-                  <span className="text-white fs-2 fw-bold">10</span>
+                  <span className="text-white fs-2 fw-bold">
+                    {dataDashboard.length}
+                  </span>
                 </div>
                 <svg width="0" height="0">
                   <defs>
@@ -100,13 +278,16 @@ export default function Dashboard() {
                   </defs>
                 </svg>
               </div>
-              <div className="text-center text-white-50 small mt-1">Day</div>
+              <div className="text-center text-white-50 mt-1">รถที่ออก</div>
             </div>
           </div>
           <div className="col-md-2">
             <div className="card card-custom p-2">
               <div className="position-relative d-flex align-items-center justify-content-center mt-5 mb-5">
-                <CircularProgress value={197} color="url(#gradient2)" />
+                <CircularProgress
+                  value={0 + number_Car_Out}
+                  color="url(#gradient3)"
+                />
                 <div
                   className="position-absolute"
                   style={{
@@ -115,39 +296,9 @@ export default function Dashboard() {
                     transform: "translate(-50%, -50%)",
                   }}
                 >
-                  <span className="text-white fs-2 fw-bold">57</span>
-                </div>
-                <svg width="0" height="0">
-                  <defs>
-                    <linearGradient
-                      id="gradient2"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-              <div className="text-center text-white-50 small mt-1">Week</div>
-            </div>
-          </div>
-          <div className="col-md-2">
-            <div className="card card-custom p-2">
-              <div className="position-relative d-flex align-items-center justify-content-center mt-5 mb-5">
-                <CircularProgress value={352} color="url(#gradient3)" />
-                <div
-                  className="position-absolute"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                >
-                  <span className="text-white fs-2 fw-bold">352</span>
+                  <span className="text-white fs-2 fw-bold">
+                    {number_Car_Out}
+                  </span>
                 </div>
                 <svg width="0" height="0">
                   <defs>
@@ -164,7 +315,48 @@ export default function Dashboard() {
                   </defs>
                 </svg>
               </div>
-              <div className="text-center text-white-50 small mt-1">Month</div>
+              <div className="text-center text-white-50 mt-1">
+                ออกก่อน 09.00
+              </div>
+            </div>
+          </div>
+          <div className="col-md-2">
+            <div className="card card-custom p-2">
+              <div className="position-relative d-flex align-items-center justify-content-center mt-5 mb-5">
+                <CircularProgress
+                  value={0 + number_Car_IN}
+                  color="url(#gradient3)"
+                />
+                <div
+                  className="position-absolute"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
+                  <span className="text-white fs-2 fw-bold">
+                    {number_Car_IN}
+                  </span>
+                </div>
+                <svg width="0" height="0">
+                  <defs>
+                    <linearGradient
+                      id="gradient3"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <div className="text-center text-white-50 mt-1">
+                เข้าก่อน 14.00
+              </div>
             </div>
           </div>
           <div className="col-md-6">
@@ -201,33 +393,116 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card card-custom p-3 overflow-data-auto"></div>
+            <div className="card card-custom p-3 overflow-data-auto">
+              <div className="text-center text-white h5">ออกก่อนเวลา 08.30</div>
+              <div className="row align-items-end" style={{ height: `3000px` }}>
+                <div className="col text-center bar-height">
+                  <div
+                    className="bar-success mx-auto"
+                    style={{
+                      height: `${successPercentOut}%`,
+                      width: "60%",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, #4ade80, #86efac)",
+                      border: "1px solid #16a34a",
+                      transition: "height 0.3s ease",
+                    }}
+                  ></div>
+                  <div className="mt-2 text-white fw-bold">
+                    {successPercentOut.toFixed(0)}%
+                  </div>
+                </div>
+
+                <div className="col text-center bar-height">
+                  <div
+                    className="bar-danger mx-auto"
+                    style={{
+                      height: `${dangerPercentOut}%`,
+                      width: "60%",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, #ef4444, #fca5a5)",
+                      border: "1px solid #b91c1c",
+                      transition: "height 0.3s ease",
+                    }}
+                  ></div>
+                  <div className="mt-2 text-white fw-bold">
+                    {dangerPercentOut.toFixed(0)}%
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="col-md-3">
             <div className="card card-custom p-3 overflow-data-auto">
-              
+              <div className="text-center text-white h5">เข้าก่อน 17.30</div>
+              <div className="row align-items-end" style={{ height: `3000px` }}>
+                <div className="col text-center bar-height">
+                  <div
+                    className="bar-success mx-auto"
+                    style={{
+                      height: `${successPercentIn}%`,
+                      width: "60%",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, #4ade80, #86efac)",
+                      border: "1px solid #16a34a",
+                      transition: "height 0.3s ease",
+                    }}
+                  ></div>
+                  <div className="mt-2 text-white fw-bold">
+                    {successPercentIn.toFixed(0)}%
+                  </div>
+                </div>
+
+                <div className="col text-center bar-height">
+                  <div
+                    className="bar-danger mx-auto"
+                    style={{
+                      height: `${dangerPercentIn}%`,
+                      width: "60%",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, #ef4444, #fca5a5)",
+                      border: "1px solid #b91c1c",
+                      transition: "height 0.3s ease",
+                    }}
+                  ></div>
+                  <div className="mt-2 text-white fw-bold">
+                    {dangerPercentIn.toFixed(0)}%
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="col-md-6">
             <div className="card card-custom px-3 pt-2 overflow-data-auto">
               <div className="row border-bottom p-2">
-                <div className="col-4 text-white">ชื่อโครงการ</div>
-                <div className="col-4 text-white">ทะเบียนรถ</div>
-                <div className="col-4 text-white">มูลค่า</div>
+                <div className="col-3 text-white">ชื่อโครงการ</div>
+                <div className="col-3 text-white">ทะเบียนรถ</div>
+                <div className="col-3 text-white">เวลาออก</div>
+                <div className="col-3 text-white">มูลค่า</div>
               </div>
-              {data.map((item: any, index: number) => (
-                <div className="row border-bottom border-1 border-white p-2" key={index}>
-                  <div key={index} className="col-4 text-white">
-                    {item.Project}
+              {dataDashboard.map((item, index) => {
+                return (
+                  <div
+                    className="row border-bottom border-white p-2"
+                    key={index}
+                  >
+                    <div key={index} className="col-3 text-white">
+                      {item.Project.length >= 20
+                        ? item.Project.slice(0, 20) + `...`
+                        : item.Project}
+                    </div>
+                    <div className="col-3 text-white">
+                      {item.Car_Registration}
+                    </div>
+                    <div className="col-3 text-white">
+                      {item.Out_Time.split("T")[1].split(".")[0]}
+                    </div>
+                    <div className="col-3 text-white">
+                      {item.Car_Registration}
+                    </div>
                   </div>
-                  <div className="col-4 text-white">
-                    {item.Car_Registration}
-                  </div>
-                  <div className="col-4 text-white">
-                    {item.Car_Registration}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

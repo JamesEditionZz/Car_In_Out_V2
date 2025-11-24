@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
+import { GET as getPriceOil } from "@/app/api/GET/Price_Oil/route";
 
 const config: sql.config = {
   user: "sa",
@@ -24,28 +25,32 @@ type RecordCarData = {
   other?: string;
 };
 
+const filterCarRegistration = async (Car: string) => {
+  const pool = await sql.connect(config);
+
+  const filterCar = await pool
+    .request()
+    .input("Car_Registration", sql.VarChar, `%${Car}%`)
+    .query(
+      `SELECT * FROM Detail_Oil WHERE Car_Registration LIKE @Car_Registration`
+    );
+
+  return filterCar.recordset;
+};
+
 export async function POST(request: NextRequest) {
   const pool = await sql.connect(config);
   const data: RecordCarData = await request.json();
 
   try {
-    const [d, m, y] = data.date.split("/");
-    const [hh, mm, ss] = data.time.split(":");
-
-    const year = Number(y) - 543;
-    const month = Number(m).toString().padStart(2, "0");
-    const day = Number(d).toString().padStart(2, "0");
-    const hour = Number(hh).toString().padStart(2, "0");
-    const minute = Number(mm).toString().padStart(2, "0");
-    const second = Number(ss).toString().padStart(2, "0");
-
-    const thaiTimeWithOffset = `${year}-${month}-${day} ${hour}:${minute}:${second} +07:00`;
+    const newDate = new Date();
+    const thaiDate = new Date(newDate.getTime() + 7 * 60 * 60 * 1000);
 
     if (data.numberIn != "") {
       const result = await pool
         .request()
         .input("Car_Registration", sql.VarChar, data.carRegister)
-        .input("In_Time", sql.DateTimeOffset, thaiTimeWithOffset)
+        .input("In_Time", sql.DateTime, thaiDate)
         .input("Number_Mile_In", sql.Float, data.numberIn)
         .query(
           "UPDATE Detail_Car SET In_Time = @In_Time, Number_Mile_In = @Number_Mile_In WHERE Car_Registration = @Car_Registration"
@@ -76,8 +81,42 @@ export async function POST(request: NextRequest) {
         .input("Other", sql.VarChar, responseupdate[0].Other)
         .input("UserApprove", sql.VarChar, responseupdate[0].UserApprove)
         .query(
-          `INSERT INTO Detail_Log (Project, Car_Registration, Out_Time, Number_Mile_Out, In_Time, Number_Mile_In, Name, Other, UserApprove) 
+          `INSERT INTO Detail_Log (Project, Car_Registration, Out_Time, Number_Mile_Out, In_Time, Number_Mile_In, Name, Other, UserApprove)
                 VALUES (@Project, @Car_Registration, @Out_Time, @Number_Mile_Out, @In_Time, @Number_Mile_In, @Name, @Other, @UserApprove)`
+        );
+      const priceOilResponse = await getPriceOil();
+      const responsedataOil = await priceOilResponse.json();
+      const returnFilter = await filterCarRegistration(
+        responseupdate[0].Car_Registration
+      );
+
+      let PriceOil = 0;
+
+      if (returnFilter.length > 0 || returnFilter[0]?.Type_Oil === "NGV") {
+        PriceOil = Number(responsedataOil.data[5].price);
+      } else {
+        PriceOil = Number(responsedataOil.data[6].price);
+      }
+
+      let TotalMile =
+        responseupdate[0].Number_Mile_In - responseupdate[0].Number_Mile_Out;
+
+      await pool
+        .request()
+        .input(
+          "Car_Registration",
+          sql.VarChar,
+          responseupdate[0].Car_Registration
+        )
+        .input("Out_Time", sql.DateTime, responseupdate[0].Out_Time)
+        .input("Number_Mile_Out", sql.Float, responseupdate[0].Number_Mile_Out)
+        .input("In_Time", sql.DateTime, responseupdate[0].In_Time)
+        .input("Number_Mile_In", sql.Float, responseupdate[0].Number_Mile_In)
+        .input("Name", sql.VarChar, responseupdate[0].Name)
+        .input("Price", sql.Float, PriceOil * TotalMile)
+        .query(
+          `INSERT INTO Report_Detail (Car_Registration, Out_Time, Number_Mile_Out, In_Time, Number_Mile_In, Name, Price)
+                VALUES (@Car_Registration, @Out_Time, @Number_Mile_Out, @In_Time, @Number_Mile_In, @Name, @Price)`
         );
 
       await pool
@@ -107,7 +146,7 @@ export async function POST(request: NextRequest) {
           .request()
           .input("Project", sql.VarChar, data.Project)
           .input("Car_Registration", sql.VarChar, data.carRegister)
-          .input("Out_Time", sql.DateTimeOffset, thaiTimeWithOffset)
+          .input("Out_Time", sql.DateTime, thaiDate)
           .input("Number_Mile_Out", sql.Float, data.numberOut)
           .input("Name", sql.VarChar, name)
           .input("Other", sql.VarChar, data.other)

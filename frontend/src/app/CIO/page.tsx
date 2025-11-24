@@ -16,8 +16,9 @@ interface CarDetail {
 }
 
 export default function Page() {
+  const [data_Oil, setData_Oil] = useState<CarDetail[]>([]);
   const [data, setData] = useState<CarDetail[]>([]);
-  const [logdata, setLogData] = useState<any[]>([]);
+  const [logdata, setLogData] = useState<CarDetail[]>([]);
   const [project, setProject] = useState<string>("");
   const [Name_Person, setName_Person] = useState<string>("");
   const [other, setOther] = useState<string>("");
@@ -30,11 +31,21 @@ export default function Page() {
   );
   const [TrueMileIn, setTrueMileIn] = useState<boolean>(false);
 
-  // เวลา
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    const fetchData = async () => {
+      const res = await fetch("../api/GET/Price_Oil");
+      const response = await res.json();
+      setData_Oil(response);
+    };
+
+    fetchData();
   }, []);
+
+  // เวลา
+  // useEffect(() => {
+  //   const timer = setInterval(() => setTime(new Date()), 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   // focus ช่องแรกตอนเริ่ม
   useEffect(() => {
@@ -92,7 +103,7 @@ export default function Page() {
           });
           const response: CarDetail[] = await res.json();
           setLogData(response);
-          setNumberOut(response[0]?.Number_Mile_In);
+          setNumberOut(response[0]?.Number_Mile_In ?? 0);
         };
 
         fetchData();
@@ -137,7 +148,6 @@ export default function Page() {
       .join(", ");
     const baseEntry = {
       date: time.toLocaleDateString("th-TH"),
-      time: time.toLocaleTimeString("th-TH", { hour12: false }),
       carRegister: Car_Register,
       namePerson: NamePerson,
       numberOut: NumberOut > 0 ? NumberOut : "",
@@ -173,48 +183,52 @@ export default function Page() {
 
   const SubmitFinal = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      if (project !== "" && project !== "-") {
-        const NamePerson = [Name_Person]
-          .filter((name) => name.trim() !== "")
-          .join(", ");
-        const baseEntry = {
-          date: time.toLocaleDateString("th-TH"),
-          time: time.toLocaleTimeString("th-TH", { hour12: false }),
-          carRegister: Car_Register,
-          namePerson: NamePerson,
-          numberOut: NumberOut > 0 ? NumberOut : "",
-          numberIn: NumberIn > 0 ? NumberIn : "",
-        };
-
-        const newEntry =
-          NumberIn > 0
-            ? { ...baseEntry, Other: other }
-            : { ...baseEntry, Project: project };
-
-        const res = await fetch("../api/POST/Record_Car", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry),
-        });
-
-        if (res.ok) {
-          const response = await fetch("../api/GET/Detail_Car");
-          const data: CarDetail[] = await response.json();
-          setData(data);
-        }
-
-        setProject("");
-        setCar_Register("");
-        setName_Person("");
-        setNumberOut(0);
-        setNumberIn(0);
-        setTrueMileIn(false);
-        setOther("");
-        inputRefs.current[0]?.focus();
-      } else {
-        alert("ระบุ หมายเหตุ");
+      if (NumberOut === 0) {
         e.preventDefault();
-        inputRefs.current[5]?.focus();
+        inputRefs.current[3]?.focus();
+      } else {
+        if (project !== "" && project !== "-") {
+          const NamePerson = [Name_Person]
+            .filter((name) => name.trim() !== "")
+            .join(", ");
+          const baseEntry = {
+            date: time.toLocaleDateString("th-TH"),
+            carRegister: Car_Register,
+            namePerson: NamePerson,
+            numberOut: NumberOut > 0 ? NumberOut : "",
+            numberIn: NumberIn > 0 ? NumberIn : "",
+          };
+
+          const newEntry =
+            NumberIn > 0
+              ? { ...baseEntry, Other: other }
+              : { ...baseEntry, Project: project };
+
+          const res = await fetch("../api/POST/Record_Car", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEntry),
+          });
+
+          if (res.ok) {
+            const response = await fetch("../api/GET/Detail_Car");
+            const data: CarDetail[] = await response.json();
+            setData(data);
+          }
+
+          setProject("");
+          setCar_Register("");
+          setName_Person("");
+          setNumberOut(0);
+          setNumberIn(0);
+          setTrueMileIn(false);
+          setOther("");
+          inputRefs.current[0]?.focus();
+        } else {
+          alert("ระบุ หมายเหตุ");
+          e.preventDefault();
+          inputRefs.current[5]?.focus();
+        }
       }
     }
   };
@@ -225,13 +239,13 @@ export default function Page() {
       <div className="form-input opacity">
         <div className="row mx-2 mt-2 mb-2 rounded-4 bg-dark overflow-auto">
           <div className="col-2 border-right bg-dark">
-            <div className="fs-5 text-center p-2 border border-2 mt-2 rounded-4">
-              <div className="text-white">
+            <div className="fs-5 text-center p-4 border border-3 mt-2 rounded-4 mb-3">
+              <div className="text-white fs-4">
                 {time.toLocaleDateString("th-TH")}
               </div>
-              <div className="text-white">
+              {/* <div className="text-white">
                 {time.toLocaleTimeString("th-TH", { hour12: false })}
-              </div>
+              </div> */}
             </div>
             <div className="mt-2">
               <label className="text-white">ป้ายทะเบียนรถ</label>
@@ -352,7 +366,9 @@ export default function Page() {
                       <td className="text-center align-content-center">
                         {item.Car_Registration}
                       </td>
-                      <td className="align-content-center text-center">{item.Name}</td>
+                      <td className="align-content-center text-center">
+                        {item.Name}
+                      </td>
                       <td className="text-center align-content-center">
                         <div>
                           {item.Out_Time.split("T")[0]}{" "}
@@ -364,7 +380,10 @@ export default function Page() {
                         </div>
                         <div>({item.Number_Mile_Out})</div>
                       </td>
-                      <td className="text-center align-content-center" width="20%">
+                      <td
+                        className="text-center align-content-center"
+                        width="20%"
+                      >
                         <div>
                           {item.In_Time
                             ? `${item.In_Time.split("T")[0]} ${

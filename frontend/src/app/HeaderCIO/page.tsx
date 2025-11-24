@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from "react";
 import "./HeaderCIO.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import DailyReport from "./DailyReport/page";
-import MonthReport from "./MonthReport/page";
 import Bar from "./Dashboard/page";
 // import { useSearchParams } from "next/navigation";
 
@@ -186,7 +184,7 @@ export default function HeaderCIO() {
             }`}
           >
             <span className="cursor-pointer" onClick={() => setSwiftPage(1)}>
-              สรุป
+              Dashboard
             </span>
           </div>
         </div>
@@ -279,36 +277,7 @@ export default function HeaderCIO() {
                     Dashboard
                   </span>
                 </div>
-                <div className={`p-1`}>
-                  <span
-                    className={`cursor-pointer ${subPage === 1 ? "border-bottom border-2" : ""}`}
-                    onClick={() => {
-                      setPageReport(1), setSubPage(1);
-                    }}
-                  >
-                    Summarize
-                  </span>
-                </div>
-                <div className={`p-1`}>
-                  <span
-                    className={`cursor-pointer ${subPage === 2 ? "border-bottom border-2" : ""}`}
-                    onClick={() => {
-                      setPageReport(2), setSubPage(2);
-                    }}
-                  >
-                    DailyReport
-                  </span>
-                </div>
-                <div className={`p-1`}>
-                  <span
-                    className={`cursor-pointer ${subPage === 3 ? "border-bottom border-2" : ""}`}
-                    onClick={() => {
-                      setPageReport(3), setSubPage(3);
-                    }}
-                  >
-                    MonthReport
-                  </span>
-                </div>
+                
                 {pageReport === 3 && (
                   <div className="mt-2 border-2 border-top animation-input">
                     <div className="mt-2 mx-2">
@@ -343,19 +312,9 @@ export default function HeaderCIO() {
                 )}
               </div>
             </>
-            {pageReport === 0 ? (
+            {pageReport === 0 && (
               <div>
                 <Bar />
-              </div>
-            ) : pageReport === 1 ? (
-              <></>
-            ) : pageReport === 2 ? (
-              <div>
-                <DailyReport />
-              </div>
-            ) : (
-              <div className="w-full-data">
-                <MonthReport month={month} year={Number(year)} />
               </div>
             )}
           </div>
