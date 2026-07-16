@@ -15,9 +15,7 @@ const config: sql.config = {
 export async function POST(res: NextRequest) {
   try {
     const data = await res.json();
-    const pool = await sql.connect(config);
-
-    console.log(data);
+    const pool = await sql.connect(config);    
 
     const result = await pool
       .request()
@@ -32,21 +30,33 @@ export async function POST(res: NextRequest) {
     if (checkresult && checkresult.length > 0) {
       await pool
         .request()
+        .input("Project", sql.VarChar, "อื่นๆ")
         .input("Car_Registration", sql.VarChar, data.Car_Registration)
         .input("Mile_Out", sql.Int, data.Mile_Out)
-        .input("Status", sql.Float, 1)
-        .query(
-          "Update dbo.Detail_Car SET Status = @Status WHERE Car_Registration = @Car_Registration AND Number_Mile_Out = @Mile_Out"
-        );
+        .input("Other", sql.VarChar, data.value)
+        .query("Update dbo.Detail_Car SET Project = @Project, Other = @Other WHERE Car_Registration = @Car_Registration AND Number_Mile_Out = @Mile_Out");
     } else {
-      await pool
+      const result = await pool
         .request()
         .input("Car_Registration", sql.VarChar, data.Car_Registration)
         .input("Mile_Out", sql.Int, data.Mile_Out)
-        .input("Status", sql.Float, 1)
         .query(
-          "Update dbo.Detail_Log SET Status = @Status WHERE Car_Registration = @Car_Registration AND Number_Mile_Out = @Mile_Out"
+          "SELECT * FROM dbo.Detail_Log WHERE Number_Mile_Out = @Mile_Out AND Car_Registration = @Car_Registration"
         );
+
+        console.log(result.recordset);
+        
+      if (result.recordset.length > 0) {
+        await pool
+          .request()
+          .input("Project", sql.VarChar, "อื่นๆ")
+          .input("Car_Registration", sql.VarChar, data.Car_Registration)
+          .input("Mile_Out", sql.Int, data.Mile_Out)
+        .input("Other", sql.VarChar, data.value)
+          .query(
+            "Update dbo.Detail_Log SET Project = @Project, Other = @Other WHERE Car_Registration = @Car_Registration AND Number_Mile_Out = @Mile_Out"
+          );
+      }
     }
     return NextResponse.json({ success: true });
   } catch (error) {

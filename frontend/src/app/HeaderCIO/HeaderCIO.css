@@ -114,16 +114,7 @@
   }
 
   .border-dashboard {
-    left: 0 !important;
-    margin-top: 10px !important;
-    margin-left: 10% !important;
-    margin-right: 10px !important;
-    position: fixed !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
     background: rgba(255, 255, 255, 0.3) !important;
-    border-radius: 10px !important;
-    width: 89% !important;
-    height: 90vh !important;
   }
 
   .card-DayCar {
@@ -205,16 +196,10 @@
 }
 
 .border-dashboard {
-  left: 0;
-  margin-top: 10px;
-  margin-left: 10%;
-  margin-right: 10px;
-  position: fixed;
+  margin-top: 15px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.3);
   border-radius: 10px;
-  width: 89%;
-  height: 90vh;
 }
 
 .card-DayCar {
@@ -272,4 +257,39 @@
   100% {
     opacity: 1;
   }
+}
+
+.position-customize{
+  left: 2%;
+  top: 2%;
+}
+
+.model-select{
+  width: 20%;
+  height: auto;
+  max-height: 30vh;
+  border: 1px solid gray;
+  border-radius: 10px;
+  background-color: white;
+  overflow: auto;
+  color: black;
+}
+
+.cursor-select{
+  text-align: left;
+}
+
+.cursor-select:hover{
+  background-color: rgb(81, 81, 255);
+  color: white;
+  cursor: pointer;
+}
+
+.mt-6{
+  margin-top: 55px;
+}
+
+.px-6{
+  padding-left: 28px;
+  padding-right: 28px;
 }

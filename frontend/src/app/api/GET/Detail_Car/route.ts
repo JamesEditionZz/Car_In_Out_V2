@@ -14,7 +14,7 @@ const config: sql.config = {
 
 export async function GET() {
   const pool = await sql.connect(config);
-  const result = await pool.request().query("SELECT * FROM Detail_Car");
+  const result = await pool.request().query("SELECT * FROM dbo.Detail_Car ORDER BY Out_Time DESC");  
 
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

@@ -13,37 +13,64 @@ const config: sql.config = {
   },
 };
 
+interface DetailLog {
+  Project: string;
+  Name: string;
+  Car_Registration: string;
+  Out_Time: string | Date;
+  Number_Mile_Out: number | null;
+  In_Time: string | Date;
+  Number_Mile_In: number | null;
+  Other: string | null;
+  Status: string;
+  Approve: string | null;
+}
+
 export async function POST(req: NextRequest) {
   let pool: sql.ConnectionPool | undefined;
   try {
     const data = await req.json();
 
     pool = await sql.connect(config);
-
-    const [year, month] = data.date_report.split("-");
-
-    let result: sql.IResult<any>;
+    let result: sql.IResult<DetailLog>;
 
     if (data.type_report == 1) {
+      // ตั้งให้เป็น StartDate: 00:00:00 และ EndDate: 23:59:59.999 เพื่อใช้ BETWEEN ได้เต็มประสิทธิภาพ
+      const startDate = new Date(`${data.date_report1}T00:00:00`);
+      const endDate = new Date(`${data.date_report2}T23:59:59.999`);
+
       result = await pool
         .request()
-        .input("Date", sql.Date, data.date_report)
+        .input("StartDate", sql.DateTime, startDate)
+        .input("EndDate", sql.DateTime, endDate)
         .query(
-          "SELECT * FROM Detail_Log WHERE CAST(OUT_Time AS DATE) = @Date"
+          `SELECT * FROM dbo.Detail_Car WHERE OUT_Time BETWEEN @StartDate AND @EndDate
+           UNION ALL
+           SELECT * FROM dbo.Detail_Log WHERE OUT_Time BETWEEN @StartDate AND @EndDate`,
         );
+        
     } else if (data.type_report == 2) {
+    const [year, month] = data.date_report1.split("-");
+
       result = await pool
         .request()
         .input("Year", sql.Int, parseInt(year))
         .input("Month", sql.Int, parseInt(month))
         .query(
-          "SELECT * FROM Detail_Log WHERE MONTH(OUT_Time) = @Month AND YEAR(OUT_Time) = @Year"
+          `SELECT * FROM dbo.Detail_Log WHERE MONTH(OUT_Time) = @Month AND YEAR(OUT_Time) = @Year
+           UNION ALL
+           SELECT * FROM dbo.Detail_Car WHERE MONTH(OUT_Time) = @Month AND YEAR(OUT_Time) = @Year
+          `
         );
     } else {
       result = await pool
         .request()
-        .input("Year", sql.Int, data.date_report)
-        .query("SELECT * FROM Detail_Log WHERE YEAR(OUT_Time) = @Year");
+        .input("Year", sql.Int, data.date_report1)
+        .query(`
+          SELECT * FROM dbo.Detail_Log WHERE YEAR(OUT_Time) = @Year
+           UNION ALL
+          SELECT * FROM dbo.Detail_Car WHERE YEAR(OUT_Time) = @Year
+          `);
     }
 
     const rows = result.recordset;
@@ -56,24 +83,28 @@ export async function POST(req: NextRequest) {
       { header: "โครงการ", key: "Project", width: 100 },
       { header: "ชื่อ", key: "Name", width: 20 },
       { header: "ทะเบียนรถ", key: "CarNo", width: 20 },
-      { header: "ออกเวลา", key: "OUT_Time", width: 25 },
+      { header: "วันที่ออก", key: "OUT_Date", width: 20 },
+      { header: "เวลาออก", key: "OUT_Time", width: 25 },
       { header: "เลขไมค์ออก", key: "Mile_Out", width: 25 },
-      { header: "เข้าเวลา", key: "IN_Time", width: 25 },
+      { header: "วันที่เข้า", key: "IN_Date", width: 25 },
+      { header: "เวลาเข้า", key: "IN_Time", width: 25 },
       { header: "เลขไมค์เข้า", key: "Mile_In", width: 25 },
       { header: "หมายเหตุ", key: "Other", width: 15 },
       { header: "สถานะ", key: "Status", width: 15 },
       { header: "Approve", key: "Approve", width: 15 },
     ];
 
-    rows.forEach((item: any, i: number) => {
+    rows.forEach((item, i) => {
       worksheet.addRow({
         index: i + 1,
         Project: item.Project,
         Name: item.Name,
         CarNo: item.Car_Registration,
-        OUT_Time: item.Out_Time,
+        OUT_Date: item.Out_Time,
+        OUT_Time: String(item.Out_Time).split(" ")[4],
         Mile_Out: item.Number_Mile_Out,
-        IN_Time: item.In_Time,
+        IN_Date: item.In_Time,
+        IN_Time: String(item.In_Time).split(" ")[4],
         Mile_In: item.Number_Mile_In,
         Other: item.Other,
         Status: item.Status,
@@ -101,7 +132,7 @@ export async function POST(req: NextRequest) {
     if (pool) {
       try {
         await pool.close();
-      } catch (e) {
+      } catch {
         // ignore close errors
       }
     }

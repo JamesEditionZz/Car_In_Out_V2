@@ -14,9 +14,7 @@ const config: sql.config = {
 
 export async function GET() {
   const pool = await sql.connect(config);
-  const result = await pool
-    .request()
-    .query(`SELECT * FROM dbo.Detail_Car UNION ALL SELECT * FROM dbo.Detail_Log ORDER BY Out_Time DESC`);  
+  const result = await pool.request().query("SELECT * FROM dbo.TRegis_Car");
 
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

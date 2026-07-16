@@ -17,9 +17,11 @@ export default function Login() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    });
+    });    
 
     const response: { Status: number }[] = await res.json();
+
+    console.log(response);
 
     if (response[0]) {
       if (response[0].Status === 99) {
@@ -30,7 +32,7 @@ export default function Login() {
       } else {
         setOpacity(true);
         setTimeout(() => {
-          router.push("../CIO");
+          router.push(`../CIO?username=${username}`);
         }, 500);
       }
     } else {
@@ -57,7 +59,7 @@ export default function Login() {
         } else {
           setOpacity(true);
           setTimeout(() => {
-            router.push("../CIO");
+            router.push(`../CIO?username=${username}`);
           }, 500);
         }
       } else {

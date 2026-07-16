@@ -21,7 +21,8 @@ export default function Dashboard() {
   const [dataDashboard, setDataDashboard] = useState<CarDetail[]>([]);
   const [model_select_date, setModel_select_date] = useState<boolean>(false);
   const [select_value, setSelect_value] = useState<number>(0);
-  const [value_date, setValueDate] = useState<string>("");
+  const [value_date1, setValueDate1] = useState<string>("");
+  const [value_date2, setValueDate2] = useState<string>("");
 
   useEffect(() => {
     const datafecth = async () => {
@@ -61,10 +62,7 @@ export default function Dashboard() {
   data.map((item) => {
     const month = new Date(item.Out_Time).getMonth();
     chartData[month].value += 1;
-  })
-
-  console.log(chartData);
-  
+  });
 
   const CircularProgress = ({
     value,
@@ -117,7 +115,8 @@ export default function Dashboard() {
       },
       body: JSON.stringify({
         type_report: select_value,
-        date_report: value_date,
+        date_report1: value_date1,
+        date_report2: value_date2,
       }),
     });
 
@@ -125,7 +124,7 @@ export default function Dashboard() {
     const url = window.URL.createObjectURL(new Blob([blob]));
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `รายงานรถเข้าออก${value_date}.xlsx`);
+    link.setAttribute("download", `รายงานรถเข้าออก${value_date1}.xlsx`);
     document.body.appendChild(link);
     link.click();
     link.parentNode?.removeChild(link);
@@ -164,7 +163,6 @@ export default function Dashboard() {
 
   const successPercentOut = (successValueOut / totalOut) * 100;
   const dangerPercentOut = (dangerValueOut / totalOut) * 100;
-  
 
   return (
     <div className="">
@@ -185,32 +183,53 @@ export default function Dashboard() {
               <option value={3}>รายปี</option>
             </select>
             {select_value == 1 && (
-              <input
-                type="date"
-                className="form-control mt-3"
-                onChange={(e) => setValueDate(e.target.value)}
-              />
+              <>
+                <div className="row">
+                  <div className="col-3 text-center align-content-center">
+                    <span>วันที่ : </span>
+                  </div>
+                  <div className="col-9">
+                    <input
+                      type="date"
+                      className="form-control mt-3"
+                      onChange={(e) => setValueDate1(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-3 text-center align-content-center">
+                    <span>ถึง : </span>
+                  </div>
+                  <div className="col-9">
+                    <input
+                      type="date"
+                      className="form-control mt-3"
+                      onChange={(e) => setValueDate2(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
             )}
             {select_value == 2 && (
-              <input
-                type="month"
-                className="form-control mt-3"
-                onChange={(e) => setValueDate(e.target.value)}
-              />
+              <>
+                  <input
+                    type="month"
+                    className="form-control mt-3"
+                    onChange={(e) => setValueDate1(e.target.value)}
+                  />
+              </>
             )}
             {select_value == 3 && (
               <input
                 type="number"
                 className="form-control mt-3"
                 placeholder="ระบุปี เช่น 2025"
-                onChange={(e) => setValueDate(e.target.value)}
+                onChange={(e) => setValueDate1(e.target.value)}
               />
             )}
             <div className="d-flex justify-content-between gap-2 mt-3">
               <button
                 className="btn btn-secondary"
                 onClick={() => {
-                  setModel_select_date(false), setSelect_value(0);
+                  (setModel_select_date(false), setSelect_value(0));
                 }}
               >
                 ยกเลิก
@@ -229,7 +248,7 @@ export default function Dashboard() {
         <div className="d-flex justify-content-between align-items-center mb-2 border-2 border-bottom mx-2">
           <h1 className="text-white h4 mb-0">Dashboard</h1>
           <div className="d-flex align-items-center gap-3">
-            <span className="text-white h4">รถเข้าออก</span>
+            <span className="text-white h4">Export รถเข้าออก</span>
             <span
               className="cursor-pointer"
               onClick={() => setModel_select_date(true)}
@@ -478,7 +497,7 @@ export default function Dashboard() {
                 <div className="col-3 text-white">ชื่อโครงการ</div>
                 <div className="col-3 text-white">ทะเบียนรถ</div>
                 <div className="col-3 text-white">เวลาออก</div>
-                <div className="col-3 text-white">มูลค่า</div>
+                <div className="col-3 text-white">ทะเบียนรถ</div>
               </div>
               {dataDashboard.map((item, index) => {
                 return (

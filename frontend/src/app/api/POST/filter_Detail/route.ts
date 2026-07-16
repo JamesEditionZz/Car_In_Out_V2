@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
 
 const config: sql.config = {
@@ -12,11 +12,16 @@ const config: sql.config = {
   },
 };
 
-export async function GET() {
+export async function POST(req: NextRequest) {
+  const data = await req.json();
   const pool = await sql.connect(config);
+
   const result = await pool
     .request()
-    .query(`SELECT * FROM dbo.Detail_Car UNION ALL SELECT * FROM dbo.Detail_Log ORDER BY Out_Time DESC`);  
+    .input("ID", sql.Int, data.ID)
+    .query(
+      "SELECT * FROM dbo.Detail_Car WHERE ID = @ID"
+    );    
 
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

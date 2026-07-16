@@ -1,9 +1,47 @@
-.border-right{
-    border-right: 1px solid rgb(255, 255, 255);
+.border-right {
+  border-right: 1px solid rgb(255, 255, 255);
 }
 
-.form-control-input{
-    margin-top: 0;
-    background: rgba(255, 255, 255, 0.0);
-    border-bottom: 1px solid white;
+.form-control-input {
+  margin-top: 0;
+  background: rgba(255, 255, 255, 0);
+  border-bottom: 1px solid white;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.arrow-down {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 8px; /* ระยะห่างจากข้อความ */
+  vertical-align: middle; /* จัดให้อยู่กึ่งกลางบรรทัดเดียวกับตัวหนังสือ */
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #ffffff; /* เปลี่ยนสีลูกศรที่นี่ (ปัจจุบันเป็นสีขาว) */
+  cursor: pointer;
+}
+
+.model-content-Car {
+  margin-top: 10px;
+  margin-left: 100px;
+  position: absolute;
+  transform: translateX(-50%); /* จัดให้กึ่งกลาง */
+  background-color: #2b3035; /* สีเข้มให้เข้ากับธีม Dark */
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+  z-index: 1000; /* ให้อยู่บนสุด */
+  min-width: 180px;
+  height: 500px;
+  border: 1px solid #495057;
+  overflow: auto;
+}
+
+.select-cursor-point:hover{
+    cursor: pointer;
+    background-color: #495057;
+    border-radius: 7px;
 }

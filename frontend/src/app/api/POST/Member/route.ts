@@ -19,6 +19,6 @@ export async function POST(req: NextRequest) {
   const result = await pool
     .request()
     .input("username", sql.VarChar, data.username)
-    .query("SELECT * FROM Member WHERE Username = @username");
+    .query("SELECT * FROM dbo.Member WHERE Username = @username");
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

@@ -20,10 +20,8 @@ export async function POST(req: NextRequest) {
     .request()
     .input("Car_Registration", sql.VarChar, data)
     .query(
-      "SELECT * FROM Detail_Log WHERE Car_Registration = @Car_Registration ORDER BY ID DESC"
+      "SELECT * FROM dbo.Detail_Log WHERE Car_Registration = @Car_Registration ORDER BY ID DESC"
     );
-
-  console.log(result);
   
   return NextResponse.json(result.recordset); // ✅ ส่งเฉพาะข้อมูล
 }

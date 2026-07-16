@@ -14,16 +14,18 @@ const config: sql.config = {
 
 export async function POST(request: NextRequest) {
   const data = await request.json();
-  console.log(data.username);
-
+  
   const pool = await sql.connect(config);
   const result = await pool
     .request()
     .input("Username", sql.VarChar, data.username)
     .input("Password", sql.VarChar, data.password)
     .query(
-      "SELECT * FROM Member WHERE Username = @Username AND Password = @Password"
+      "SELECT * FROM dbo.Member WHERE Username = @Username AND Password = @Password"
     );
+
+  console.log(result.recordset);
+  
 
   return NextResponse.json(result.recordset);
 }
